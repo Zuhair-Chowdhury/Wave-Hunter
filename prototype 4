@@ -1,0 +1,230 @@
+import pygame #pygame is imported into the program
+
+pygame.init() #pygame is initialized
+
+clock = pygame.time.Clock()
+fps = 60 #frames per second
+screen_width = 1920 #width of the screen
+screen_height = 1080 #height of the screen
+dummy = False
+
+screen = pygame.display.set_mode((screen_width, screen_height)) #setting the display 
+pygame.display.set_caption("Wave Hunter")
+
+RunRight = [pygame.image.load('Player Animations/RRA0.png'), pygame.image.load('Player Animations/RRA1.png'), pygame.image.load('Player Animations/RRA2.png'), pygame.image.load('Player Animations/RRA3.png'), pygame.image.load('Player Animations/RRA4.png'), pygame.image.load('Player Animations/RRA5.png'), pygame.image.load('Player Animations/RRA6.png'), pygame.image.load('Player Animations/RRA7.png')]
+RunLeft = [pygame.image.load('Player Animations/LRA0.png'), pygame.image.load('Player Animations/LRA1.png'), pygame.image.load('Player Animations/LRA2.png'), pygame.image.load('Player Animations/LRA3.png'), pygame.image.load('Player Animations/LRA4.png'), pygame.image.load('Player Animations/LRA5.png'), pygame.image.load('Player Animations/LRA6.png'), pygame.image.load('Player Animations/LRA7.png')]
+IdleRight = [pygame.image.load('Player Animations/RIA0.png'), pygame.image.load('Player Animations/RIA1.png'), pygame.image.load('Player Animations/RIA2.png'), pygame.image.load('Player Animations/RIA3.png'), pygame.image.load('Player Animations/RIA4.png'), pygame.image.load('Player Animations/RIA5.png'), pygame.image.load('Player Animations/RIA6.png'), pygame.image.load('Player Animations/RIA7.png'), pygame.image.load('Player Animations/RIA8.png'), pygame.image.load('Player Animations/RIA9.png'), pygame.image.load('Player Animations/RIA10.png'), pygame.image.load('Player Animations/RIA11.png'), pygame.image.load('Player Animations/RIA12.png'), pygame.image.load('Player Animations/RIA13.png'), pygame.image.load('Player Animations/RIA14.png'), pygame.image.load('Player Animations/RIA15.png'), pygame.image.load('Player Animations/RIA16.png'), pygame.image.load('Player Animations/RIA17.png'), pygame.image.load('Player Animations/RIA18.png'), pygame.image.load('Player Animations/RIA19.png')]
+IdleLeft = [pygame.image.load('Player Animations/LIA0.png'), pygame.image.load('Player Animations/LIA1.png'), pygame.image.load('Player Animations/LIA2.png'), pygame.image.load('Player Animations/LIA3.png'), pygame.image.load('Player Animations/LIA4.png'), pygame.image.load('Player Animations/LIA5.png'), pygame.image.load('Player Animations/LIA6.png'), pygame.image.load('Player Animations/LIA7.png'), pygame.image.load('Player Animations/LIA8.png'), pygame.image.load('Player Animations/LIA9.png'), pygame.image.load('Player Animations/LIA10.png'), pygame.image.load('Player Animations/LIA11.png'), pygame.image.load('Player Animations/LIA12.png'), pygame.image.load('Player Animations/LIA13.png'), pygame.image.load('Player Animations/LIA14.png'), pygame.image.load('Player Animations/LIA15.png'), pygame.image.load('Player Animations/LIA16.png'), pygame.image.load('Player Animations/LIA17.png'), pygame.image.load('Player Animations/LIA18.png'), pygame.image.load('Player Animations/LIA19.png')]
+JumpRight = [pygame.image.load('Player Animations/RJA0.png'), pygame.image.load('Player Animations/RJA1.png'), pygame.image.load('Player Animations/RJA2.png'), pygame.image.load('Player Animations/RJA3.png'), pygame.image.load('Player Animations/RJA4.png'), pygame.image.load('Player Animations/RJA5.png'), pygame.image.load('Player Animations/RJA6.png')]
+JumpLeft = [pygame.image.load('Player Animations/LJA0.png'), pygame.image.load('Player Animations/LJA1.png'), pygame.image.load('Player Animations/LJA2.png'), pygame.image.load('Player Animations/LJA3.png'), pygame.image.load('Player Animations/LJA4.png'), pygame.image.load('Player Animations/LJA5.png'), pygame.image.load('Player Animations/LJA6.png')]
+DashRight = [pygame.image.load('Player Animations/RDA0.png'), pygame.image.load('Player Animations/RDA1.png'), pygame.image.load('Player Animations/RDA2.png'), pygame.image.load('Player Animations/RDA3.png'), pygame.image.load('Player Animations/RDA4.png'), pygame.image.load('Player Animations/RDA5.png'), pygame.image.load('Player Animations/RDA6.png'), pygame.image.load('Player Animations/RDA7.png'), pygame.image.load('Player Animations/RDA8.png')]
+DashLeft = [pygame.image.load('Player Animations/LDA0.png'), pygame.image.load('Player Animations/LDA1.png'), pygame.image.load('Player Animations/LDA2.png'), pygame.image.load('Player Animations/LDA3.png'), pygame.image.load('Player Animations/LDA4.png'), pygame.image.load('Player Animations/LDA5.png'), pygame.image.load('Player Animations/LDA6.png'), pygame.image.load('Player Animations/LDA7.png'), pygame.image.load('Player Animations/LDA8.png')]
+
+
+class player(object): #create a player class
+    def __init__(self, x_pos, y_pos, width, height):
+        self.x_pos = x_pos #set all variables for player as attributes
+        self.y_pos = y_pos
+        self.width = width
+        self.height = height
+        self.velocity = 5
+        self.jump = False
+        self.jump_count = 10
+        self.dash = False
+        self.dash_count = 5
+        self.facing_right = True
+        self.dash_cooldown = 0
+        self.player_state = "Idle"
+        self.walkframe_count = 0 #these variables are to count the frames of each animation
+        self.jumpframe_count = 0
+        self.dashframe_count = 0
+        self.idleframe_count = 0
+
+class enemy(object): #creates an enemy class
+    def __init__(self, x_pos, y_pos, width, height, path_start, path_end):
+        self.x_pos = x_pos
+        self.y_pos = y_pos
+        self.width = width
+        self.height = height
+        self.velocity = 5
+        self.path = [path_start, path_end]
+        self.direction = 1
+
+    def player_follow(self, player_x):
+        left_platform_end = 810
+        right_platform_start = 1110
+
+        if (self.x_pos < left_platform_end and player_x < left_platform_end) or (self.x_pos > right_platform_start and player_x > right_platform_start): #checks if enemy and player are on the same side
+            if player_x < self.x_pos and self.x_pos > 0:
+                self.x_pos -= self.velocity  # Move left toward player
+            elif player_x > self.x_pos and self.x_pos < screen_width - self.width:
+                self.x_pos += self.velocity  # Move right toward player
+        else: #follows a path when the player is on the other side
+            if self.x_pos >= self.path[1] - self.width: #ensure the enemy does not go past the gap
+                self.direction = -1 #turns enemy around
+            elif self.x_pos <= self.path[0]: #ensure enemy does not go past the edge
+                self.direction = 1
+            self.x_pos += self.velocity * self.direction
+
+def redrawGameWindow():
+    global walkframe_count
+    global jumpframe_count
+    global dashframe_count
+    global idleframe_count
+
+    screen.fill((0,0,0)) #ensures the character does not copy itself
+    pygame.draw.rect(screen, (0, 0, 255), (opp.x_pos, opp.y_pos, opp.width, opp.height))
+    pygame.draw.rect(screen, (255, 255, 255), (0, 700, 810, 380))
+    pygame.draw.rect(screen, (255, 255, 255), (1110, 700, 810, 380))
+
+    if char.walkframe_count >= 60:
+        char.walkframe_count = 0
+    
+    if char.jumpframe_count >= 60:
+        char.jumpframe_count = 0
+            
+    if char.dashframe_count >= 60:
+        char.dashframe_count = 0
+    
+    if char.idleframe_count >= 60:
+        char.idleframe_count = 0
+
+    if char.player_state == "Running":
+        if char.facing_right == True:
+            screen.blit(RunRight[char.walkframe_count//(8)], (char.x_pos, char.y_pos))
+            char.walkframe_count += 1
+        if char.facing_right == False:
+            screen.blit(RunLeft[char.walkframe_count//(8)], (char.x_pos, char.y_pos))
+            char.walkframe_count += 1
+
+    if char.player_state == "Jumping":
+        if char.facing_right == True:
+            screen.blit(JumpRight[char.jumpframe_count//(8)], (char.x_pos, char.y_pos))
+            char.jumpframe_count += 1
+        if char.facing_right == False:
+            screen.blit(JumpLeft[char.jumpframe_count//(8)], (char.x_pos, char.y_pos))
+            char.jumpframe_count += 1
+
+    if char.player_state == "Dashing":
+        if char.facing_right == True:
+            screen.blit(DashRight[char.dashframe_count//(7)], (char.x_pos, char.y_pos))
+            char.dashframe_count += 1
+        if char.facing_right == False:
+            screen.blit(DashLeft[char.dashframe_count//(7)], (char.x_pos, char.y_pos))
+            char.dashframe_count += 1
+        
+    if char.player_state == "Idle":
+        if char.facing_right == True:
+            screen.blit(IdleRight[char.idleframe_count//(3)], (char.x_pos, char.y_pos))
+            char.idleframe_count += 1
+        if char.facing_right == False:
+            screen.blit(IdleLeft[char.idleframe_count//(3)], (char.x_pos, char.y_pos))
+            char.idleframe_count += 1
+    pygame.display.update()
+                
+char = player(10, 444, 384, 384) #create an instance of the player
+opp = enemy(200, 444, 384, 384, 0, 700)
+
+game_running = True
+while game_running: #game loop
+    clock.tick(fps)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT: #checks if x button in top right is pressed
+            game_running = False #redirects out of loop
+    
+    keys = pygame.key.get_pressed() #detects when a key is pressed
+
+    moving = False  # Track if the player is moving
+
+    if keys[pygame.K_a] and char.x_pos > char.velocity: #when the 'A' key is pressed and not on the edge of the screen
+        if char.y_pos <= 444: 
+            char.x_pos -= char.velocity #player moves left
+            char.facing_right = False
+            char.player_state = "Running"
+            moving = True
+        elif char.x_pos > 810 and char.y_pos > 444:
+            char.x_pos -= char.velocity #player moves left
+            char.facing_right = False
+            moving = True
+    if keys[pygame.K_d] and char.x_pos < screen_width - char.width: #when 'D' key is pressed and not on the edge of the screen
+        if char.y_pos <= 444:
+            char.x_pos += char.velocity #player moves right
+            char.facing_right = True
+            char.player_state = "Running"
+            moving = True
+        elif char.x_pos + char.width < 1110 and char.y_pos > 444:
+            char.x_pos += char.velocity #player moves right
+            char.facing_right = True
+            moving = True
+
+    if not moving and not char.jump and not char.dash and not char.player_state == "Falling":  # If not moving, jumping, or dashing
+        char.player_state = "Idle"
+    
+    if not(char.jump):
+        if keys[pygame.K_SPACE] and char.player_state != "Falling": #when the spacebar is pressed
+            char.jump = True #player is jumping
+            char.player_state = "Jumping"
+    else:
+        if char.jump_count >= -10:
+            neg = 1 #makes jump move upwards before peak
+            if char.jump_count < 0:
+                neg = -1 #makes the jump moves downwards after its peak
+            char.y_pos -= (char.jump_count ** 2) * 0.5 *neg #player moves in a line of a quadratic
+            char.jump_count -= 1
+        else:
+            char.jump = False #jump has finished and now player is no longer in jump motion
+            char.jump_count = 10
+    if not(char.dash):
+        char.dash_cooldown -= 1 #player cooldown decrements by 1 if the the player is not dashing
+        if char.dash_cooldown < 0:
+            char.dash_cooldown = 0 #makes sure the variable does not go below 0
+        if keys[pygame.K_LSHIFT] and char.dash_cooldown == 0 and char.x_pos > char.velocity and char.x_pos < screen_width - char.width and char.player_state != "Falling": #when left shift is pressed
+            char.dash = True
+            char.player_state = "Dashing"
+    else:
+        if char.dash_count > 0: 
+            if char.facing_right == False and char.x_pos > char.velocity: #which way is the player facing and can they respecting the boundaries 
+                char.x_pos -=  char.velocity * 2 #player moves by velocity * 2 5 times
+                char.dash_count -= 1
+                if char.x_pos == char.velocity or char.x_pos < char.velocity: #cancels the dash if they are dashing into the boundary
+                    char.dash = False #all variables are reset
+                    char.dash_count = 5
+                    char.dash_cooldown = 15
+            if char.facing_right == True and char.x_pos < screen_width - char.width:
+                char.x_pos += char.velocity * 2
+                char.dash_count -= 1
+                if char.x_pos == screen_width - char.width or char.x_pos > screen_width - char.width:
+                    char.dash = False #all variables are reset
+                    char.dash_count = 5
+                    char.dash_cooldown = 15
+        else: #dash has ended
+            char.dash = False #all variables are reset
+            char.dash_count = 5
+            char.dash_cooldown = 15
+
+    if char.x_pos < 810 or char.x_pos + char.width > 1110 and char.y_pos <= 444: #checks if the player is in between the gap
+        dummy = dummy
+    else:
+        if char.y_pos < 444: #checks if the player is jumping between the gap
+            dummy = dummy
+        else:
+            if char.y_pos < 1200: #checks if the player has fallen through the gap
+                char.player_state = "Falling" #player state is falling
+                char.y_pos = char.y_pos + 15 #makes the player fall down
+            else:
+                game_running = False #close the program
+
+    if char.player_state != "Running":
+        char.walkframe_count = 0
+    if char.player_state != "Jumping":
+        char.jumpframe_count = 0
+    if char.player_state != "Dashing":
+        char.dashframe_count = 0
+    if char.player_state != "Idle":
+        char.idleframe_count = 0
+    
+    opp.player_follow(char.x_pos) #Enemy follows the player
+
+    redrawGameWindow()
+    
+pygame.quit() #program closes
