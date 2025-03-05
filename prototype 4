@@ -73,9 +73,9 @@ def redrawGameWindow():
     global idleframe_count
 
     screen.fill((0,0,0)) #ensures the character does not copy itself
-    pygame.draw.rect(screen, (0, 0, 255), (opp.x_pos, opp.y_pos, opp.width, opp.height))
     pygame.draw.rect(screen, (255, 255, 255), (0, 700, 810, 380))
     pygame.draw.rect(screen, (255, 255, 255), (1110, 700, 810, 380))
+    pygame.draw.rect(screen, (0, 0, 255), (opp.x_pos, opp.y_pos, opp.width, opp.height))
 
     if char.walkframe_count >= 60:
         char.walkframe_count = 0
@@ -99,10 +99,10 @@ def redrawGameWindow():
 
     if char.player_state == "Jumping":
         if char.facing_right == True:
-            screen.blit(JumpRight[char.jumpframe_count//(8)], (char.x_pos, char.y_pos))
+            screen.blit(JumpRight[char.jumpframe_count//(6)], (char.x_pos, char.y_pos))
             char.jumpframe_count += 1
         if char.facing_right == False:
-            screen.blit(JumpLeft[char.jumpframe_count//(8)], (char.x_pos, char.y_pos))
+            screen.blit(JumpLeft[char.jumpframe_count//(6)], (char.x_pos, char.y_pos))
             char.jumpframe_count += 1
 
     if char.player_state == "Dashing":
@@ -140,7 +140,8 @@ while game_running: #game loop
         if char.y_pos <= 444: 
             char.x_pos -= char.velocity #player moves left
             char.facing_right = False
-            char.player_state = "Running"
+            if char.player_state != "Jumping" or char.player_state != "Dashing" or char.player_state != "Falling":
+                char.player_state = "Running"
             moving = True
         elif char.x_pos > 810 and char.y_pos > 444:
             char.x_pos -= char.velocity #player moves left
@@ -150,7 +151,8 @@ while game_running: #game loop
         if char.y_pos <= 444:
             char.x_pos += char.velocity #player moves right
             char.facing_right = True
-            char.player_state = "Running"
+            if char.player_state != "Jumping" or char.player_state != "Dashing" or char.player_state != "Falling":
+                char.player_state = "Running"
             moving = True
         elif char.x_pos + char.width < 1110 and char.y_pos > 444:
             char.x_pos += char.velocity #player moves right
@@ -228,3 +230,4 @@ while game_running: #game loop
     redrawGameWindow()
     
 pygame.quit() #program closes
+
